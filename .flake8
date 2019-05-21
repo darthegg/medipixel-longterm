@@ -1,17 +1,11 @@
 [flake8]
-# F812: list comprehension redefines ...
-# H101: Use TODO(NAME)
-# H202: assertRaises Exception too broad
-# H233: Python 3.x incompatible use of print operator
-# H301: one import per line
-# H306: imports not in alphabetical order (time, os)
-# H401: docstring should not start with a space
-# H403: multi line docstrings should end on a new line
-# H404: multi line docstring should start without a leading new line
-# H405: multi line docstring summary not separated with an empty line
-# H501: Do not use self.__dict__ for string formatting
+# E203: whitespace before :
+# E266: Too many leading '#' for block comment 
+# E501: Line too long
+# W503: Line break occurred before a binary operator
 
-# ignore = F812,H101,H202,H233
+ignore = E203, E266, E501, W503
+max-line-length = 88
 exclude =
     # No need to traverse our git directory
     .git,
