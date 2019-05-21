@@ -1,24 +1,30 @@
-import numpy as np
+"""Train algorithm for DQN on "Acrobot-v1" environment.
+
+- Auther: Chaehyeuk Lee
+- Contact: chaehyeuk.lee@medipixel.io
+"""
+
+# import numpy as np
 import torch
 import torch.optim as optim
 import gym
 
-from model import dqnmodel
-from buffer import replaybuffer
+from model.dqnmodel import DQN
+from buffer.replaybuffer import ReplayBuffer
 
 BUFFER_SIZE = 1000
 BATCH_SIZE = 128
 GAMMA = 0.99
 EPSILON = 0.1
 
-env = gym.make('Acrobot-v1')
+env = gym.make("Acrobot-v1")
 env.reset()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-memory = replaybuffer.ReplayBuffer(BUFFER_SIZE, BATCH_SIZE, device)
+memory = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE, device)
 
-model = dqnmodel.DQN(env)
+model = DQN(env)
 
 if torch.cuda.is_available():
     model = model.cuda()
