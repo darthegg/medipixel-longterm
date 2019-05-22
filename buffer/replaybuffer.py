@@ -3,7 +3,7 @@
 - Auther: Chaehyeuk Lee
 - Contact: chaehyeuk.lee@medipixel.io
 - Reference: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf (DQN)
-             https://github.com/medipixel/practice_collaboration (Medipixel Github)
+             https://github.com/medipixel/rl_algorithms (Medipixel Github)
              https://github.com/higgsfield/RL-Adventure (RL Adventure)
 """
 
@@ -12,14 +12,44 @@ import torch
 
 
 class ReplayBuffer:
-    def __init__(self, capacity, batch_size, device):
+    """Fixed-size buffer to store experience tuples.
+
+    Taken from Medipixel github repository:
+    https://github.com/medipixel/rl_algorithms
+
+    Attributes:
+        buffer (list): list of replay buffer
+        buffer_size (int): size of buffer memory
+        batch_size (int): size of a batched sampled from replay buffer for training
+        device (torch.device): device used in this program (cpu or cuda)
+        index (int): index for sampling from buffer memory
+    """
+
+    def __init__(self, buffer_size, batch_size, device):
+        """Initialize a ReplayBuffer object.
+
+        Args:
+            buffer (list): list of replay buffer
+            buffer_size (int): size of buffer memory
+            batch_size (int): size of a batched sampled from replay buffer for training
+            device (torch.device): device used in this program (cpu or cuda)
+        """
         self.buffer: list = list()
-        self.buffer_size = capacity
-        self.batch_size = batch_size  
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
         self.index = 0
         self.device = device
 
     def add(self, state, action, reward, next_state, done):
+        """Add new transition to replay buffer.
+
+        Args:
+            state (numpy.ndarray): state from gym env
+            action (int): selected action through epsilon-greedy exploration
+            reward (float): reward from gym env
+            next_state (numpy.ndarray): next state from gym env
+            done (bool): done fla from gym env
+        """
         data = (state, action, reward, next_state, done)
 
         if len(self.buffer) == self.buffer_size:
@@ -30,6 +60,7 @@ class ReplayBuffer:
             self.buffer.append(data)
 
     def sample(self):
+        """Uniformly randomly sample transitions from replay buffer."""
         states = []
         actions = []
         rewards = []
@@ -69,4 +100,5 @@ class ReplayBuffer:
         return states_, actions_, rewards_, next_states_, dones_
 
     def __len__(self):
+        """Return the current size of internal memory."""
         return len(self.buffer)
