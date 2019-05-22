@@ -9,6 +9,7 @@
 
 import numpy as np
 import torch
+from typing import Tuple
 
 
 class ReplayBuffer:
@@ -22,14 +23,19 @@ class ReplayBuffer:
         buffer_size (int): size of buffer memory
         batch_size (int): size of a batched sampled from replay buffer for training
         device (torch.device): device used in this program (cpu or cuda)
-        index (int): index for sampling from buffer memory
+        index (int): index for replacing old transition to new transition in buffer memory
     """
 
-    def __init__(self, buffer_size, batch_size, device):
+    def __init__(
+        self,
+        buffer_size: int,
+        batch_size: int,
+        device: torch.device
+    ):
         """Initialize a ReplayBuffer object.
 
         Args:
-            buffer (list): list of replay buffer
+            buffer (list): list where old transitions(replay buffer) are saved
             buffer_size (int): size of buffer memory
             batch_size (int): size of a batched sampled from replay buffer for training
             device (torch.device): device used in this program (cpu or cuda)
@@ -40,7 +46,14 @@ class ReplayBuffer:
         self.index = 0
         self.device = device
 
-    def add(self, state, action, reward, next_state, done):
+    def add(
+        self,
+        state: np.ndarray,
+        action: int,
+        reward: float,
+        next_state: np.ndarray,
+        done: bool
+    ):
         """Add new transition to replay buffer.
 
         Args:
@@ -48,7 +61,7 @@ class ReplayBuffer:
             action (int): selected action through epsilon-greedy exploration
             reward (float): reward from gym env
             next_state (numpy.ndarray): next state from gym env
-            done (bool): done fla from gym env
+            done (bool): done flag from gym env
         """
         data = (state, action, reward, next_state, done)
 
@@ -59,7 +72,7 @@ class ReplayBuffer:
         else:
             self.buffer.append(data)
 
-    def sample(self):
+    def sample(self) -> Tuple[torch.Tensor, ...]:
         """Uniformly randomly sample transitions from replay buffer."""
         states = []
         actions = []
@@ -99,6 +112,6 @@ class ReplayBuffer:
 
         return states_, actions_, rewards_, next_states_, dones_
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the current size of internal memory."""
         return len(self.buffer)

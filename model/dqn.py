@@ -10,6 +10,7 @@
 import numpy as np
 # import torch
 import torch.nn as nn
+import gym
 
 
 class DQN(nn.Module):
@@ -20,9 +21,9 @@ class DQN(nn.Module):
 
     Attributes:
         env (gym.Env): OpenAI gym environment
-        layers (torch.nn.Sequential): Affine Neural Network model
+        layers (torch.nn.Sequential): Sequential Neural Network model
     """
-    def __init__(self, env):
+    def __init__(self, env: gym.Env):
         """Initialize a ReplayBuffer object.
 
         Args:
@@ -39,7 +40,7 @@ class DQN(nn.Module):
             nn.Linear(128, self.env.action_space.n)
         )
 
-    def forward(self, x):
+    def forward(self, x: np.ndarray) -> np.ndarray:
         """Forwad calculate neural network model.
 
         Args:
@@ -47,7 +48,7 @@ class DQN(nn.Module):
         """
         return self.layers(x)
 
-    def select_action(self, state, epsilon):
+    def select_action(self, state: np.ndarray, epsilon: float) -> int:
         """Select action based on Q-value and Epsilon-greedy method.
 
         Args:
