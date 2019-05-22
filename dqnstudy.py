@@ -9,7 +9,7 @@ import torch
 import torch.optim as optim
 import gym
 
-from model.dqnmodel import DQN
+from model.dqn import DQN
 from buffer.replaybuffer import ReplayBuffer
 
 BUFFER_SIZE = 1000
