@@ -23,6 +23,7 @@ class DQN(nn.Module):
         env (gym.Env): OpenAI gym environment
         layers (torch.nn.Sequential): Sequential Neural Network model
     """
+
     def __init__(self, env: gym.Env):
         """Initialize a ReplayBuffer object.
 
@@ -61,4 +62,5 @@ class DQN(nn.Module):
             action = action.item()
         else:
             action = self.env.action_space.sample()
+            print("!!!!!!!!!!!!!! Random Action !!!!!!!!!!!!!!!")  # for test code
         return action

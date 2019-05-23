@@ -91,6 +91,8 @@ class ReplayBuffer:
             rewards.append(np.array(r, copy=False))
             next_states.append(np.array(n_s, copy=False))
             dones.append(np.array(float(d), copy=False))
+            # '(copy=False)' means s,a,r,n_s,d will be removed from memory.
+            # This is for efficient memory allocation size.
 
         # Change sampled data to torch tensor variable
         states_ = torch.FloatTensor(np.array(states)).to(self.device)
