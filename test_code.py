@@ -1,10 +1,9 @@
-"""Test code for DQN model and ReplayBuffer on "Acrobot-v1" environment.
+"""Test code for DQN model and ReplayBuffer on "CartPole-v0" environment.
 
 - Auther: Chaehyeuk Lee
 - Contact: chaehyeuk.lee@medipixel.io
 """
 
-# import numpy as np
 import torch
 import torch.optim as optim
 import gym
@@ -17,13 +16,13 @@ BATCH_SIZE = 2
 GAMMA = 0.99
 EPSILON = 0.3
 
-env = gym.make("Acrobot-v1")
+env = gym.make("CartPole-v0")
 state = env.reset()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 memory = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE, device)
-model = DQN(env)
+model = DQN(env, device)
 
 if torch.cuda.is_available():
     model = model.cuda()
@@ -38,7 +37,10 @@ for _ in range(BUFFER_SIZE):
     state = next_state
 
 replay = memory.sample()
+
+"""
 print(replay)
+
 print("All replay buffer Length : ", memory.__len__())  # This should be same with BUFFER_SIZE.
 print("Sampled states: ", replay[0])  # This should print the same number of states with batch.
 print("One of sampled state: ", replay[0][0])  # This should print only one state set.
@@ -58,3 +60,16 @@ print("Foward Result 2 : ", forward_result)
 # Check if tensor is working properly.
 forward_result = model.forward(replay[0])
 print("Foward Result 1 + 2: ", forward_result)
+"""
+
+q_tensor = model.forward_tensor(replay[0])
+print("Forward Tensor Result : ", q_tensor)
+
+action_tensor = replay[1]
+print("Action Tensor Result :", action_tensor)
+
+q_by_action_tensor = q_tensor[torch.arange(q_tensor.size(0)), action_tensor]
+print("Selected Q-Value : ", q_by_action_tensor)
+
+max_q_tensor = model.get_max_q(replay[0])
+print("Max Q Tensor : ", max_q_tensor)

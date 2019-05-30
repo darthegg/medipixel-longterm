@@ -81,7 +81,7 @@ class ReplayBuffer:
         dones = []
 
         indices = np.random.choice(
-            len(self.buffer), size=self.batch_size, replace=False
+            len(self.buffer), size=self.batch_size, replace=True
         )
 
         for i in indices:
@@ -96,14 +96,14 @@ class ReplayBuffer:
 
         # Change sampled data to torch tensor variable
         states_ = torch.FloatTensor(np.array(states)).to(self.device)
-        actions_ = torch.FloatTensor(np.array(actions)).to(self.device)
+        actions_ = torch.LongTensor(np.array(actions)).to(self.device)
         rewards_ = torch.FloatTensor(np.array(rewards).reshape(-1, 1)).to(self.device)
         next_states_ = torch.FloatTensor(np.array(next_states)).to(self.device)
         dones_ = torch.FloatTensor(np.array(dones).reshape(-1, 1)).to(self.device)
 
         # Cuda available
-        # Returns a copy of this object in CUDA memory. 
-        # If 'True' and the source is in pinned memory, 
+        # Returns a copy of this object in CUDA memory.
+        # If 'True' and the source is in pinned memory,
         # the copy will be asynchronous with respect to the host.
         if torch.cuda.is_available():
             states_ = states_.cuda(non_blocking=True)
