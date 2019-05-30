@@ -38,12 +38,14 @@ for _ in range(BUFFER_SIZE):
 
 replay = memory.sample()
 
-"""
 print(replay)
 
-print("All replay buffer Length : ", memory.__len__())  # This should be same with BUFFER_SIZE.
-print("Sampled states: ", replay[0])  # This should print the same number of states with batch.
-print("One of sampled state: ", replay[0][0])  # This should print only one state set.
+# This should be same with BUFFER_SIZE.
+print("All replay buffer Length : ", memory.__len__())  
+# This should print the same number of states with batch.
+print("Sampled states: ", replay[0])  
+ # This should print only one state set.
+print("One of sampled state: ", replay[0][0]) 
 
 # Select action test code
 for _ in range(5):
@@ -51,25 +53,29 @@ for _ in range(5):
     print("Action : ", action)  # action should be same except random case.
 
 # Forward Calculation test code
+# The dimension should be same with the number of action.
 forward_result = model.forward(replay[0][0])
 print("Foward Result 1 : ", forward_result)
 forward_result = model.forward(replay[0][1])
 print("Foward Result 2 : ", forward_result)
-# The dimension should be same with the number of action.
 
-# Check if tensor is working properly.
+# Check if np2tensor is working properly.
 forward_result = model.forward(replay[0])
 print("Foward Result 1 + 2: ", forward_result)
-"""
 
+# Check if tensor forward calculation is working properly.
 q_tensor = model.forward_tensor(replay[0])
 print("Forward Tensor Result : ", q_tensor)
 
+# Check action tensor 
 action_tensor = replay[1]
 print("Action Tensor Result :", action_tensor)
 
+# Check q value of desired action
 q_by_action_tensor = q_tensor[torch.arange(q_tensor.size(0)), action_tensor]
 print("Selected Q-Value : ", q_by_action_tensor)
 
+# get max q_value tensor
 max_q_tensor = model.get_max_q(replay[0])
 print("Max Q Tensor : ", max_q_tensor)
+
