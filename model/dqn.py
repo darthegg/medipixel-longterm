@@ -42,58 +42,27 @@ class DQN(nn.Module):
             nn.Linear(128, self.env.action_space.n)
         )
 
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        """Forwad calculate neural network model (one state).
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forwad calculate neural network model.
 
         Args:
-            x (numpy.ndarray): state from gym environment
-        """
-        x = torch.tensor(x, device=self.device).float()
-        return self.layers(x)
-
-    def forward_tensor(self, x: torch.Tensor) -> torch.Tensor:
-        """Forwad calculate neural network model (states set(tensor)).
-
-        Args:
-            x (torch.Tensor): sampled states
+            x (torch.Tensor): state from gym environment
         """
         return self.layers(x)
 
-    def select_action(self, state: np.ndarray, epsilon: float, test: str) -> int:
+    def select_action(self, state: np.ndarray, epsilon: float, is_learn: bool = True) -> int:
         """Select action based on Q-value and Epsilon-greedy method.
 
         Args:
             state (numpy.ndarray): state from gym environment
             epsilon (float): epsilon-greedy exploration parameter
         """
-        if test == 'train':
-            if np.random.random() > epsilon:
-                q_value = self.forward(state)
-                _, action = q_value.max(0)
-                action = action.item()
-            else:
-                action = self.env.action_space.sample()
-                # print("!!!!!!!!!!!!!! Random Action !!!!!!!!!!!!!!!")
-            return action
-
+        if is_learn and np.random.random() <= epsilon:
+            action = self.env.action_space.sample()
+            # print("!!!!!!!!!!!!!! Random Action !!!!!!!!!!!!!!!")
         else:
+            state = torch.FloatTensor(state).to(self.device)
             q_value = self.forward(state)
-            _, action = q_value.max(0)
-            action = action.item()
+            action = torch.argmax(q_value, dim=0).item()
 
-            return action
-
-    def get_max_q(self, states_: torch.Tensor) -> torch.Tensor:
-        """Get Maimum Q-Value
-
-        Args:
-            state_ (torch.Tensor): state from gym environment
-        """
-        q_value = self.forward_tensor(states_)
-        # print("Q values : ", q_value)
-        max_q_value, _ = q_value.max(1)
-        return max_q_value
-
-    # TODO
-    # def loss_calculate
-    # def train
+        return action
