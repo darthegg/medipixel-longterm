@@ -33,7 +33,8 @@ def get_td_loss(
     estimated_q = torch.gather(q_values, dim=1, index=actions.unsqueeze(dim=1))
     # estimated_q = q_set[torch.arange(q_set.size(0)), actions_]
 
-    loss = F.smooth_l1_loss(estimated_q, target_q)
+    # loss = F.smooth_l1_loss(estimated_q, target_q)
+    loss = (estimated_q - target_q).pow(2).mean()
 
     return loss
 
@@ -45,14 +46,14 @@ LEARNING_RATE = 2.5e-4
 epsilon = 1.0
 max_epsilon = 1.0
 min_epsilon = 0.01
-epsilon_decay = 0.001
+epsilon_decay = 0.0005
 
-# MAX_STEP = 100
-MAX_EPISODE = 500
+MAX_EPISODE = 1000
 TARGET_UPDATE_AFTER = 50
 TARGET_UPDATE_STEP = 10
 IS_LEARN = True
 
+torch.manual_seed(0)
 
 # Env initialize
 env = gym.make("CartPole-v0")
@@ -101,7 +102,7 @@ for episode in range(MAX_EPISODE):
 
         if done is True:
             print(
-                f"episode : {episode}\treward sum : {score}",
+                f"episode : {episode}\tscore : {score}",
                 "\tLoss : %.4f" % (loss),
                 "\tEpsilon : %.4f" % (epsilon))
             break
