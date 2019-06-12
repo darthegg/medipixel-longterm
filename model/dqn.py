@@ -7,8 +7,6 @@
              https://github.com/higgsfield/RL-Adventure (RL Adventure)
 """
 
-import numpy as np
-import torch
 import torch.nn as nn
 import gym
 
@@ -24,7 +22,7 @@ class DQN(nn.Module):
         layers (torch.nn.Sequential): Sequential Neural Network model
     """
 
-    def __init__(self, env: gym.Env, device: torch.device):
+    def __init__(self, env: gym.Env):
         """Initialize a ReplayBuffer object.
 
         Args:
@@ -32,7 +30,6 @@ class DQN(nn.Module):
         """
         super(DQN, self).__init__()
         self.env = env
-        self.device = device
 
         self.layers = nn.Sequential(
             nn.Linear(self.env.observation_space.shape[0], 128),
@@ -42,27 +39,3 @@ class DQN(nn.Module):
             nn.Linear(128, self.env.action_space.n)
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forwad calculate neural network model.
-
-        Args:
-            x (torch.Tensor): state from gym environment
-        """
-        return self.layers(x)
-
-    def select_action(self, state: np.ndarray, epsilon: float, is_learn: bool = True) -> int:
-        """Select action based on Q-value and Epsilon-greedy method.
-
-        Args:
-            state (numpy.ndarray): state from gym environment
-            epsilon (float): epsilon-greedy exploration parameter
-        """
-        if is_learn and np.random.random() <= epsilon:
-            action = self.env.action_space.sample()
-            # print("!!!!!!!!!!!!!! Random Action !!!!!!!!!!!!!!!")
-        else:
-            state = torch.FloatTensor(state).to(self.device)
-            q_value = self.forward(state)
-            action = torch.argmax(q_value, dim=0).item()
-
-        return action
