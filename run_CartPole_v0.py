@@ -9,11 +9,12 @@ import torch.optim as optim
 import gym
 import numpy as np
 import random
+import wandb
 
 from model.dqn import DQN
 from buffer.replaybuffer import ReplayBuffer
 from agent.dqn import DQNAgent
-from config import dqn as H
+from config.dqn import *
 
 
 # Env initialize
@@ -28,24 +29,26 @@ random.seed(2)
 # Model, Buffer, torch initialize
 cuda_on = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda_on else "cpu")
-memory = ReplayBuffer(H.BUFFER_SIZE, H.BATCH_SIZE, device)
+memory = ReplayBuffer(H["BUFFER_SIZE"], H["BATCH_SIZE"], device)
 model = DQN(env)
 model_target = DQN(env)
-agent = DQNAgent(env, model, model_target, memory, H.GAMMA, device)
+optimizer = optim.Adam(model.parameters(), lr=H["LEARNING_RATE"])
+agent = DQNAgent(env, model, model_target, optimizer, memory, H["GAMMA"], device)
 
 if cuda_on:
     model = model.cuda()
     model_target = model_target.cuda()
 
-# Initialize optimizer
-optimizer = optim.Adam(model.parameters(), lr=H.LEARNING_RATE)
+# Initialize wandb
+if H["IS_LOG"] is True:
+    wandb.init(config=H)
 
 # Copy model parameter to target parameter
 model_target.load_state_dict(model.state_dict())
 total_step = 0
 epsilon = 1.0
 
-for episode in range(H.MAX_EPISODE):
+for episode in range(H["MAX_EPISODE"]):
     reward_log = np.array([])
     state = env.reset()
     score = 0
@@ -57,27 +60,21 @@ for episode in range(H.MAX_EPISODE):
         memory.add(state, action, reward, next_state, done)
         state = next_state
         
-        # update network
+        # Update network
         loss = 0.
-        if len(memory) >= H.BATCH_SIZE:
-            loss = agent.get_td_loss()
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            loss = loss.item()
+        if len(memory) >= H["BATCH_SIZE"]:
+            loss = agent.update_model()
 
         total_step += 1
         score += reward
 
-        if total_step >= H.TARGET_UPDATE_AFTER and total_step % H.TARGET_UPDATE_STEP == 0:
+        # Epsilon decay
+        epsilon = agent.decay_epsilon(epsilon, H["MIN_EPSILON"], H["MAX_EPSILON"], H["EPSILON_DECAY"])
+
+        # Update target network
+        if total_step >= H["TARGET_UPDATE_AFTER"] and total_step % H["TARGET_UPDATE_STEP"] == 0:
             model_target.load_state_dict(model.state_dict())
 
         if done is True:
-            print(
-                f"episode : {episode}\tscore : {score}",
-                "\tLoss : %.4f" % (loss),
-                "\tEpsilon : %.4f" % (epsilon))
+            agent.write_log(episode, score, loss, epsilon, H["IS_LOG"])
             break
-
-        epsilon = agent.decay_epsilon(epsilon, H.MIN_EPSILON, H.MAX_EPSILON, H.EPSILON_DECAY)
-

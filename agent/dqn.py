@@ -9,7 +9,9 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torch.optim as optim
 import gym
+import wandb
 
 from typing import Tuple
 
@@ -30,6 +32,7 @@ class DQNAgent:
         env: gym.Env,
         model: Tuple,
         model_target: Tuple,
+        optimizer: optim.Adam,
         memory: Tuple,
         gamma: float,
         device: torch.device
@@ -48,6 +51,7 @@ class DQNAgent:
         self.env = env
         self.model = model
         self.model_target = model_target
+        self.optimizer = optimizer
         self.memory = memory
         self.gamma = gamma
         self.device = device
@@ -87,5 +91,27 @@ class DQNAgent:
 
         return loss
 
-    def decay_epsilon(self, epsilon, min_epsilon, max_epsilon, epsilon_decay):
+    def decay_epsilon(self, epsilon: float, min_epsilon: float, max_epsilon: float, epsilon_decay: float):
         return max(epsilon - (max_epsilon - min_epsilon) * epsilon_decay, min_epsilon)
+
+    def update_model(self):
+        loss = self.get_td_loss()
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+
+    def write_log(self, episode: int, score: float, loss: float, epsilon: float, is_log: bool):
+        print(
+            f"episode : {episode}\tscore : {score}",
+            "\tLoss : %.4f" % (loss),
+            "\tEpsilon : %.4f" % (epsilon))
+
+        if is_log is True:
+            wandb.log(
+                {
+                    "score": score,
+                    "epsilon": epsilon,
+                    "dqn loss": loss,
+                }
+            )
