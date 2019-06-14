@@ -7,8 +7,8 @@
              https://github.com/higgsfield/RL-Adventure (RL Adventure)
 """
 
-import torch.nn as nn
 import gym
+import torch.nn as nn
 
 
 class DQN(nn.Module):
@@ -36,6 +36,5 @@ class DQN(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(128, self.env.action_space.n)
+            nn.Linear(128, self.env.action_space.n),
         )
-

@@ -6,14 +6,15 @@
              https://github.com/higgsfield/RL-Adventure (RL Adventure)
 """
 
+from typing import Tuple
+
+import gym
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-import gym
-import wandb
 
-from typing import Tuple
+import wandb
 
 
 class DQNAgent:
@@ -35,7 +36,7 @@ class DQNAgent:
         optimizer: optim.Adam,
         memory: Tuple,
         gamma: float,
-        device: torch.device
+        device: torch.device,
     ):
         """Initialize a DQNAgent object.
 
@@ -56,7 +57,9 @@ class DQNAgent:
         self.gamma = gamma
         self.device = device
 
-    def select_action(self, state: np.ndarray, epsilon: float, is_learn: bool = True) -> int:
+    def select_action(
+        self, state: np.ndarray, epsilon: float, is_learn: bool = True
+    ) -> int:
         """Select action based on Q-value and Epsilon-greedy method.
 
         Args:
@@ -80,18 +83,23 @@ class DQNAgent:
         next_q_values = self.model_target.layers(next_states)
         next_max_q_values = torch.max(next_q_values, dim=1)[0]
         target_q = rewards + self.gamma * next_max_q_values * (1 - dones)
-        target_q = target_q.detach()
 
         q_values = self.model.layers(states)
         estimated_q = torch.gather(q_values, dim=1, index=actions.unsqueeze(dim=1))
         # estimated_q = q_set[torch.arange(q_set.size(0)), actions_]
 
         # loss = F.smooth_l1_loss(estimated_q, target_q)
-        loss = (estimated_q - target_q).pow(2).mean()
+        loss = (estimated_q - target_q.detach()).pow(2).mean()
 
         return loss
 
-    def decay_epsilon(self, epsilon: float, min_epsilon: float, max_epsilon: float, epsilon_decay: float):
+    def decay_epsilon(
+        self,
+        epsilon: float,
+        min_epsilon: float,
+        max_epsilon: float,
+        epsilon_decay: float,
+    ):
         return max(epsilon - (max_epsilon - min_epsilon) * epsilon_decay, min_epsilon)
 
     def update_model(self):
@@ -101,17 +109,14 @@ class DQNAgent:
         self.optimizer.step()
         return loss.item()
 
-    def write_log(self, episode: int, score: float, loss: float, epsilon: float, is_log: bool):
+    def write_log(
+        self, episode: int, score: float, loss: float, epsilon: float, is_log: bool
+    ):
         print(
             f"episode : {episode}\tscore : {score}",
             "\tLoss : %.4f" % (loss),
-            "\tEpsilon : %.4f" % (epsilon))
+            "\tEpsilon : %.4f" % (epsilon),
+        )
 
         if is_log is True:
-            wandb.log(
-                {
-                    "score": score,
-                    "epsilon": epsilon,
-                    "dqn loss": loss,
-                }
-            )
+            wandb.log({"score": score, "epsilon": epsilon, "dqn loss": loss})

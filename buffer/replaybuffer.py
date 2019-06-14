@@ -7,9 +7,10 @@
              https://github.com/higgsfield/RL-Adventure (RL Adventure)
 """
 
+from typing import Tuple
+
 import numpy as np
 import torch
-from typing import Tuple
 
 
 class ReplayBuffer:
@@ -26,12 +27,7 @@ class ReplayBuffer:
         index (int): index for replacing old transition to new transition in buffer memory
     """
 
-    def __init__(
-        self,
-        buffer_size: int,
-        batch_size: int,
-        device: torch.device
-    ):
+    def __init__(self, buffer_size: int, batch_size: int, device: torch.device):
         """Initialize a ReplayBuffer object.
 
         Args:
@@ -52,7 +48,7 @@ class ReplayBuffer:
         action: int,
         reward: float,
         next_state: np.ndarray,
-        done: bool
+        done: bool,
     ):
         """Add new transition to replay buffer.
 
@@ -80,9 +76,7 @@ class ReplayBuffer:
         next_states = []
         dones = []
 
-        indices = np.random.choice(
-            len(self.buffer), size=self.batch_size, replace=True
-        )
+        indices = np.random.choice(len(self.buffer), size=self.batch_size, replace=True)
 
         for i in indices:
             s, a, r, n_s, d = self.buffer[i]
